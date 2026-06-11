@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de vehículos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Calculadora de vehículos</h1>
+      <p class="subtitle">Estima cargos de subasta y flete marítimo a Guatemala</p>
+    </header>
+
+    <div class="layout">
+      <div class="layout-form">
+        <form id="calculator-form" class="card">
+          <div class="field">
+            <label for="title-type">Tipo de título</label>
+            <select id="title-type" name="titleType" required>
+              <option value="clean">Título limpio</option>
+              <option value="non-clean">Título no limpio</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="sale-price">Precio de venta</label>
+            <div class="input-prefix">
+              <span>$</span>
+              <input
+                id="sale-price"
+                name="salePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                required
+              />
+            </div>
+          </div>
+
+          <fieldset class="field-group">
+            <legend>Grúa</legend>
+            <div class="field">
+              <label for="lugar-search">Buscar ubicación</label>
+              <div class="combobox" id="lugar-combobox">
+                <input
+                  id="lugar-search"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="Ciudad, estado, compañía o sub-lote..."
+                  aria-autocomplete="list"
+                  aria-controls="lugar-options"
+                  aria-expanded="false"
+                />
+                <ul id="lugar-options" class="combobox-list hidden" role="listbox"></ul>
+              </div>
+              <p id="lugar-selected" class="hint hidden"></p>
+              <p id="lugar-error" class="error hidden">Selecciona una ubicación de la lista.</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="field-group">
+            <legend>Flete marítimo</legend>
+
+            <div class="field">
+              <label for="vehicle-size">Tamaño del vehículo</label>
+              <select id="vehicle-size" name="vehicleSize" required>
+                <option value="small">Pequeño — hasta 15 pies, máx. 5 pies de alto</option>
+                <option value="special">Especial — hasta 15 pies, máx. 5'3" de alto</option>
+                <option value="medium">Mediano — hasta 16 pies, máx. 5'7" de alto</option>
+                <option value="large">Grande — hasta 16'11"</option>
+                <option value="xlarge">Extra grande — hasta 17'11"</option>
+                <option value="xxlarge">Extra extra grande — más de 18 pies</option>
+                <option value="motorcycle">Motocicleta</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="shipping-origin">Puerto de salida (EE.UU.)</label>
+              <select id="shipping-origin" name="shippingOrigin" required>
+                <option value="california">California</option>
+                <option value="florida">Florida</option>
+                <option value="philadelphia">Philadelphia</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="shipping-destination">Destino en Guatemala</label>
+              <select id="shipping-destination" name="shippingDestination" required></select>
+            </div>
+          </fieldset>
+
+          <button type="submit">Calcular</button>
+        </form>
+      </div>
+
+      <aside class="layout-results">
+        <section id="results" class="card results" aria-live="polite">
+          <h2>Desglose de costos</h2>
+          <p id="results-empty" class="results-empty">
+            Completa el formulario y haz clic en Calcular para ver el desglose aquí.
+          </p>
+          <div id="results-content" class="hidden">
+            <div class="breakdown-section">
+              <h3 class="breakdown-heading">Subasta</h3>
+              <dl class="breakdown-table">
+                <div class="row">
+                  <dt>Precio de venta</dt>
+                  <dd id="sale-price-result">—</dd>
+                </div>
+                <div class="row">
+                  <dt>Cargo del comprador</dt>
+                  <dd id="buyer-fee">—</dd>
+                </div>
+                <div class="row">
+                  <dt>Cargo de acceso</dt>
+                  <dd id="gate-fee">—</dd>
+                </div>
+                <div class="row">
+                  <dt>Cargo ambiental</dt>
+                  <dd id="environmental-fee">—</dd>
+                </div>
+                <div class="row">
+                  <dt>Cargo por recolección de título</dt>
+                  <dd id="title-pickup-fee">—</dd>
+                </div>
+                <div class="row">
+                  <dt>Cargo por puja virtual</dt>
+                  <dd id="virtual-bid-fee">—</dd>
+                </div>
+                <div class="row total">
+                  <dt>Total cargos de subasta</dt>
+                  <dd id="total-fees">—</dd>
+                </div>
+                <div class="row subtotal">
+                  <dt>Subtotal subasta</dt>
+                  <dd id="auction-subtotal">—</dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="breakdown-section">
+              <h3 class="breakdown-heading">Envío</h3>
+              <dl class="breakdown-table">
+                <div class="row">
+                  <dt>Cargo de grúa</dt>
+                  <dd id="lugar-fee">—</dd>
+                </div>
+                <div class="row">
+                  <dt>Flete marítimo</dt>
+                  <dd id="sea-freight">—</dd>
+                </div>
+                <div class="row subtotal">
+                  <dt>Subtotal envío</dt>
+                  <dd id="shipping-subtotal">—</dd>
+                </div>
+              </dl>
+            </div>
+
+            <dl class="breakdown-table">
+              <div class="row grand-total">
+                <dt>Total</dt>
+                <dd id="total-cost">—</dd>
+              </div>
+            </dl>
+            <p id="quote-note" class="note hidden"></p>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script src="locations.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
