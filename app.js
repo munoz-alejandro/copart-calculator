@@ -1,6 +1,9 @@
 const GATE_FEE = 95;
 const ENVIRONMENTAL_FEE = 15;
 const TITLE_PICKUP_FEE = 20;
+const IVA_RATE = 0.12;
+const ISR_RATE = 0.2;
+const PLACAS_GTQ = 2000;
 
 const BUYER_FEE_TIERS = [
   { start: 0, end: 49.99, nonClean: 25, clean: 25 },
@@ -176,15 +179,19 @@ function getSeaFreight(vehicleSize, origin, destination) {
   return { amount, quoteRequired: false };
 }
 
-function calculateCarFees(salePrice, titleType, vehicleSize, origin, destination, location) {
+function calculateCarFees(salePrice, titleType, vehicleSize, origin, destination, location, exchangeRate) {
   const buyerFee = getBuyerFee(salePrice, titleType);
   const virtualBidFee = getVirtualBidFee(salePrice);
   const totalAuctionFees = buyerFee + GATE_FEE + ENVIRONMENTAL_FEE + TITLE_PICKUP_FEE + virtualBidFee;
   const seaFreight = getSeaFreight(vehicleSize, origin, destination);
   const lugarFee = location.quoteRequired ? 0 : location.precio;
   const seaFreightAmount = seaFreight.amount || 0;
-
   const shippingSubtotal = lugarFee + seaFreightAmount;
+  const auctionSubtotal = salePrice + totalAuctionFees;
+  const iva = auctionSubtotal * IVA_RATE;
+  const isr = auctionSubtotal * ISR_RATE;
+  const placasUsd = exchangeRate > 0 ? PLACAS_GTQ / exchangeRate : 0;
+  const taxesSubtotal = iva + isr + placasUsd;
 
   return {
     salePrice,
@@ -194,14 +201,19 @@ function calculateCarFees(salePrice, titleType, vehicleSize, origin, destination
     titlePickupFee: TITLE_PICKUP_FEE,
     virtualBidFee,
     totalAuctionFees,
-    auctionSubtotal: salePrice + totalAuctionFees,
+    auctionSubtotal,
+    iva,
+    isr,
+    placasUsd,
+    placasGtq: PLACAS_GTQ,
+    taxesSubtotal,
     lugarFee: location.quoteRequired ? null : location.precio,
     lugarQuoteRequired: location.quoteRequired,
     lugarLabel: formatLocationLabel(location),
     seaFreight: seaFreight.amount,
     seaFreightQuoteRequired: seaFreight.quoteRequired,
     shippingSubtotal,
-    totalCost: salePrice + totalAuctionFees + shippingSubtotal,
+    totalCost: auctionSubtotal + taxesSubtotal + shippingSubtotal,
   };
 }
 
@@ -222,12 +234,36 @@ const currency = new Intl.NumberFormat("en-US", {
   currency: "USD",
 });
 
-function setResult(id, value) {
+const gtq = new Intl.NumberFormat("es-GT", {
+  style: "currency",
+  currency: "GTQ",
+});
+
+function setResult(id, value, exchangeRate) {
   document.getElementById(id).textContent = currency.format(value);
+  const gtqEl = document.getElementById(id + "-gtq");
+  if (gtqEl) {
+    gtqEl.textContent = exchangeRate > 0 ? gtq.format(value * exchangeRate) : "—";
+  }
 }
 
 function setResultText(id, text) {
   document.getElementById(id).textContent = text;
+  const gtqEl = document.getElementById(id + "-gtq");
+  if (gtqEl) {
+    gtqEl.textContent = "—";
+  }
+}
+
+function setPlacasResult(placasUsd, placasGtq, exchangeRate) {
+  document.getElementById("placas-fee").textContent =
+    exchangeRate > 0 ? currency.format(placasUsd) : "—";
+  document.getElementById("placas-fee-gtq").textContent = gtq.format(placasGtq);
+}
+
+function getExchangeRate() {
+  const rate = parseFloat(document.getElementById("exchange-rate").value);
+  return rate > 0 ? rate : 0;
 }
 
 function populateDestinations(origin) {
@@ -366,41 +402,52 @@ form.addEventListener("submit", function (event) {
   const origin = shippingOrigin.value;
   const destination = shippingDestination.value;
 
+  const exchangeRate = getExchangeRate();
+
   const breakdown = calculateCarFees(
     salePrice,
     titleType,
     vehicleSize,
     origin,
     destination,
-    selectedLocation
+    selectedLocation,
+    exchangeRate
   );
   const note = document.getElementById("quote-note");
   const notes = [];
 
-  setResult("sale-price-result", breakdown.salePrice);
-  setResult("buyer-fee", breakdown.buyerFee);
-  setResult("gate-fee", breakdown.gateFee);
-  setResult("environmental-fee", breakdown.environmentalFee);
-  setResult("title-pickup-fee", breakdown.titlePickupFee);
-  setResult("virtual-bid-fee", breakdown.virtualBidFee);
-  setResult("total-fees", breakdown.totalAuctionFees);
-  setResult("auction-subtotal", breakdown.auctionSubtotal);
+  setResult("sale-price-result", breakdown.salePrice, exchangeRate);
+  setResult("buyer-fee", breakdown.buyerFee, exchangeRate);
+  setResult("gate-fee", breakdown.gateFee, exchangeRate);
+  setResult("environmental-fee", breakdown.environmentalFee, exchangeRate);
+  setResult("title-pickup-fee", breakdown.titlePickupFee, exchangeRate);
+  setResult("virtual-bid-fee", breakdown.virtualBidFee, exchangeRate);
+  setResult("total-fees", breakdown.totalAuctionFees, exchangeRate);
+  setResult("auction-subtotal", breakdown.auctionSubtotal, exchangeRate);
+  setResult("iva-fee", breakdown.iva, exchangeRate);
+  setResult("isr-fee", breakdown.isr, exchangeRate);
+  setPlacasResult(breakdown.placasUsd, breakdown.placasGtq, exchangeRate);
+  setResult("taxes-subtotal", breakdown.taxesSubtotal, exchangeRate);
+
+  if (exchangeRate <= 0) {
+    notes.push("Ingresa el tipo de cambio para convertir placas (Q2,000) e incluirlas en el total.");
+  }
 
   if (breakdown.lugarQuoteRequired) {
     setResultText("lugar-fee", "A cotizar");
     notes.push("El cargo de grúa para " + breakdown.lugarLabel + " requiere cotización.");
   } else {
-    setResult("lugar-fee", breakdown.lugarFee);
+    setResult("lugar-fee", breakdown.lugarFee, exchangeRate);
   }
 
   if (breakdown.seaFreightQuoteRequired) {
     setResultText("sea-freight", "A cotizar");
     notes.push("El flete marítimo para vehículos de más de 18 pies requiere cotización.");
   } else {
-    setResult("sea-freight", breakdown.seaFreight);
+    setResult("sea-freight", breakdown.seaFreight, exchangeRate);
   }
 
-  setResult("shipping-subtotal", breakdown.shippingSubtotal);
+  setResult("shipping-subtotal", breakdown.shippingSubtotal, exchangeRate);
 
   if (notes.length) {
     note.textContent = notes.join(" ") + " Los subtotales y el total no incluyen partidas a cotizar.";
@@ -409,7 +456,7 @@ form.addEventListener("submit", function (event) {
     note.classList.add("hidden");
   }
 
-  setResult("total-cost", breakdown.totalCost);
+  setResult("total-cost", breakdown.totalCost, exchangeRate);
 
   resultsEmpty.classList.add("hidden");
   resultsContent.classList.remove("hidden");

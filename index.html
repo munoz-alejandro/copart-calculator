@@ -40,6 +40,21 @@
             </div>
           </div>
 
+          <div class="field">
+            <label for="exchange-rate">Tipo de cambio (1 USD = Q)</label>
+            <div class="input-prefix">
+              <span>Q</span>
+              <input
+                id="exchange-rate"
+                name="exchangeRate"
+                type="number"
+                min="0"
+                step="0.0001"
+                placeholder="7.75"
+              />
+            </div>
+          </div>
+
           <fieldset class="field-group">
             <legend>Grúa</legend>
             <div class="field">
@@ -103,68 +118,112 @@
             Completa el formulario y haz clic en Calcular para ver el desglose aquí.
           </p>
           <div id="results-content" class="hidden">
+            <div class="breakdown-columns">
+              <span></span>
+              <span>USD</span>
+              <span>Q</span>
+            </div>
+
             <div class="breakdown-section">
               <h3 class="breakdown-heading">Subasta</h3>
-              <dl class="breakdown-table">
+              <div class="breakdown-table">
                 <div class="row">
-                  <dt>Precio de venta</dt>
-                  <dd id="sale-price-result">—</dd>
+                  <span class="row-desc">Precio de venta</span>
+                  <span class="row-money" id="sale-price-result">—</span>
+                  <span class="row-money row-money-gtq" id="sale-price-result-gtq">—</span>
                 </div>
                 <div class="row">
-                  <dt>Cargo del comprador</dt>
-                  <dd id="buyer-fee">—</dd>
+                  <span class="row-desc">Cargo del comprador</span>
+                  <span class="row-money" id="buyer-fee">—</span>
+                  <span class="row-money row-money-gtq" id="buyer-fee-gtq">—</span>
                 </div>
                 <div class="row">
-                  <dt>Cargo de acceso</dt>
-                  <dd id="gate-fee">—</dd>
+                  <span class="row-desc">Cargo de acceso</span>
+                  <span class="row-money" id="gate-fee">—</span>
+                  <span class="row-money row-money-gtq" id="gate-fee-gtq">—</span>
                 </div>
                 <div class="row">
-                  <dt>Cargo ambiental</dt>
-                  <dd id="environmental-fee">—</dd>
+                  <span class="row-desc">Cargo ambiental</span>
+                  <span class="row-money" id="environmental-fee">—</span>
+                  <span class="row-money row-money-gtq" id="environmental-fee-gtq">—</span>
                 </div>
                 <div class="row">
-                  <dt>Cargo por recolección de título</dt>
-                  <dd id="title-pickup-fee">—</dd>
+                  <span class="row-desc">Recolección de título</span>
+                  <span class="row-money" id="title-pickup-fee">—</span>
+                  <span class="row-money row-money-gtq" id="title-pickup-fee-gtq">—</span>
                 </div>
                 <div class="row">
-                  <dt>Cargo por puja virtual</dt>
-                  <dd id="virtual-bid-fee">—</dd>
+                  <span class="row-desc">Puja virtual</span>
+                  <span class="row-money" id="virtual-bid-fee">—</span>
+                  <span class="row-money row-money-gtq" id="virtual-bid-fee-gtq">—</span>
                 </div>
                 <div class="row total">
-                  <dt>Total cargos de subasta</dt>
-                  <dd id="total-fees">—</dd>
+                  <span class="row-desc">Total cargos de subasta</span>
+                  <span class="row-money" id="total-fees">—</span>
+                  <span class="row-money row-money-gtq" id="total-fees-gtq">—</span>
                 </div>
                 <div class="row subtotal">
-                  <dt>Subtotal subasta</dt>
-                  <dd id="auction-subtotal">—</dd>
+                  <span class="row-desc">Subtotal subasta</span>
+                  <span class="row-money" id="auction-subtotal">—</span>
+                  <span class="row-money row-money-gtq" id="auction-subtotal-gtq">—</span>
                 </div>
-              </dl>
+              </div>
+            </div>
+
+            <div class="breakdown-section">
+              <h3 class="breakdown-heading">Impuestos</h3>
+              <div class="breakdown-table">
+                <div class="row">
+                  <span class="row-desc">IVA (12%)</span>
+                  <span class="row-money" id="iva-fee">—</span>
+                  <span class="row-money row-money-gtq" id="iva-fee-gtq">—</span>
+                </div>
+                <div class="row">
+                  <span class="row-desc">ISR (20%)</span>
+                  <span class="row-money" id="isr-fee">—</span>
+                  <span class="row-money row-money-gtq" id="isr-fee-gtq">—</span>
+                </div>
+                <div class="row">
+                  <span class="row-desc">Placas</span>
+                  <span class="row-money" id="placas-fee">—</span>
+                  <span class="row-money row-money-gtq" id="placas-fee-gtq">—</span>
+                </div>
+                <div class="row subtotal">
+                  <span class="row-desc">Subtotal impuestos</span>
+                  <span class="row-money" id="taxes-subtotal">—</span>
+                  <span class="row-money row-money-gtq" id="taxes-subtotal-gtq">—</span>
+                </div>
+              </div>
             </div>
 
             <div class="breakdown-section">
               <h3 class="breakdown-heading">Envío</h3>
-              <dl class="breakdown-table">
+              <div class="breakdown-table">
                 <div class="row">
-                  <dt>Cargo de grúa</dt>
-                  <dd id="lugar-fee">—</dd>
+                  <span class="row-desc">Grúa</span>
+                  <span class="row-money" id="lugar-fee">—</span>
+                  <span class="row-money row-money-gtq" id="lugar-fee-gtq">—</span>
                 </div>
                 <div class="row">
-                  <dt>Flete marítimo</dt>
-                  <dd id="sea-freight">—</dd>
+                  <span class="row-desc">Flete marítimo</span>
+                  <span class="row-money" id="sea-freight">—</span>
+                  <span class="row-money row-money-gtq" id="sea-freight-gtq">—</span>
                 </div>
                 <div class="row subtotal">
-                  <dt>Subtotal envío</dt>
-                  <dd id="shipping-subtotal">—</dd>
+                  <span class="row-desc">Subtotal envío</span>
+                  <span class="row-money" id="shipping-subtotal">—</span>
+                  <span class="row-money row-money-gtq" id="shipping-subtotal-gtq">—</span>
                 </div>
-              </dl>
+              </div>
             </div>
 
-            <dl class="breakdown-table">
+            <div class="breakdown-table">
               <div class="row grand-total">
-                <dt>Total</dt>
-                <dd id="total-cost">—</dd>
+                <span class="row-desc">Total</span>
+                <span class="row-money" id="total-cost">—</span>
+                <span class="row-money row-money-gtq" id="total-cost-gtq">—</span>
               </div>
-            </dl>
+            </div>
             <p id="quote-note" class="note hidden"></p>
           </div>
         </section>
